@@ -6,7 +6,15 @@
 <body>
   <h1>Submit & View Praises</h1>
   
-  <!-- your code goes here -->
+  <form action="/praises" method="POST"> <!-- update with your HTTP endpoint URL -->
+    <label for="praise">Enter Praise:</label>
+    <input type="text" name="praise" id="praise" required />
+    <button type="submit">Submit</button>
+  </form>
+
+  <form action="/praises" method="GET">
+    <button type="submit">View Praises</button>
+  </form>
 
 </body>
 </html>

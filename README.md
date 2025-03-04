@@ -162,50 +162,7 @@ export default async function(req) {
 ```
 Congratulations, you know have a server rendered page!
 
-
-Modify the Val Town function to return an HTML page instead of JSON:
-
-```js
-export default async function(req) {
-  if (req.method === 'POST') {
-    const formData = await req.formData();
-    const praise = formData.get('praise');
-
-    if (praise) {
-      praises.push(praise);
-    }
-
-    return new Response(null, {
-      status: 302,
-      headers: { "Location": "https://your-static-page-url.com" }
-    });
-  }
-
-  if (req.method === 'GET') {
-    // Return HTML with praises
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head><title>Praises</title></head>
-      <body>
-        <h1>Praise List</h1>
-        <ul>
-          ${praises.map(p => `<li>${p}</li>`).join('')}
-        </ul>
-        <a href="/">Go back</a>
-      </body>
-      </html>
-    `;
-    return new Response(htmlContent, {
-      headers: { "Content-Type": "text/html" }
-    });
-  }
-
-  return Response.json({ error: 'Method not allowed.' }, { status: 405 });
-}
-```
-
-## Serving Static Files Before Building the API
+## Build Our Own Server
 
 Before setting up a new API layer, we will serve static files from the local file system. This allows us to load `index.html` and any other static assets without using `npx live-server`. Instead, we'll make a new server using Node's HTTP module. 
 

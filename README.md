@@ -5,12 +5,12 @@ Norfolk JS 2025 Workshop on REST APIs
 
 To begin, **create a Codespace** from this repo and **set up a Val.town account** to handle form submissions.
 
-### **🔹 Create a Codespace**
+### Create a Codespace
 1. Fork this repository.  
 2. In your forked repo, go to **Code → Codespaces** and create a new Codespace.  
 3. This gives you an online dev environment to edit and run the project.
 
-### **🔹 Set Up a Val.town Account**
+### Set Up a Val.town Account
 1. Go to [Val.town](https://val.town) and sign in with your **GitHub account**.  
 2. Create a new **HTTP val** to handle form submissions.  
 3. Copy your Val.town function’s **endpoint URL**—you’ll use this in your `index.html` form.
@@ -208,7 +208,7 @@ We now have written server code that handles serving static files. How would we 
 
 Once this is working, we can proceed to add API functionality.
 
-## Transitioning to a Local Development Server
+### Transitioning to a Local Development Server
 
 Now that we have served static files, the next step is to create a local development server that mirrors the same functionality as the Val Town endpoint. This allows attendees to seamlessly switch between the Val Town API and their own local server while maintaining the same RESTful functionality.
 
@@ -295,7 +295,7 @@ server.listen(3000, () => {
 #### Switching Endpoints
 - Attendees can now switch between their Val Town endpoint and their local `http://localhost:3000/praises` to see the same results, demonstrating how RESTful APIs function consistently across environments.
 
-### Adding Authentication Hooks with Different Architecture
+## Add Authentication Hooks with Different Architecture
 We will now add an authenication layer to our API using JWTs. To handle the new complexity, we can move to a framework that implements some request/response lifecycle hooks. This means the framework will give us an interface to do some processing during the request and response negotiations. The framework we'll use is Fastify. Also, we'll move to fully server rendered content for all pages. This lets the server compile the dynamic data and respond with a string of HTML that the browser will render.
 ```bash
 npm init -y

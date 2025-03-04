@@ -1,13 +1,13 @@
 # praise-cage-rest-api-workshop
 Norfolk JS 2025 Workshop on REST APIs
 
-## Getting Started
+## Prerequisites 
 
 Use this repo to create a codespace, and you can use your GitHub account to register for a Val.town account. 
 
 ### Create a Static HTML Page with a `<form>` Element to POST
 
-Create an `index.html` file and add the following code:
+Create an `/public/index.html` file and add the following code:
 
 ```html
 <!DOCTYPE html>
@@ -322,3 +322,178 @@ server.listen(3000, () => {
 #### Switching Endpoints
 - Attendees can now switch between their Val Town endpoint and their local `http://localhost:3000/praises` to see the same results, demonstrating how RESTful APIs function consistently across environments.
 
+### Adding Authentication Hooks
+We will now add an authenication layer to our API using JWTs. To handle the new complexity, we can move to a framework that implements some request/response lifecycle hooks. This means the framework will give us an interface to do some processing during the request and response negotiations. The framework we'll use is Fastify.
+```bash
+npm init -y
+npm install fastify @fastify/cookie @fastify/formbody @fastify/jwt
+```
+Replace your `server.js` code with the following: 
+```js
+const Fastify = require('fastify');
+const fastifyCookie = require('@fastify/cookie');
+const fastifyFormBody = require('@fastify/formbody');
+const fastifyJwt = require('@fastify/jwt');
+
+const fastify = Fastify({ logger: true });
+
+fastify.register(fastifyCookie, { secret: 'cookie-secret' });
+fastify.register(fastifyFormBody);
+fastify.register(fastifyJwt, { secret: 'supersecretkey' });
+
+const users = {
+  nic: { password: 'praisecage!' },
+  travolta: { password: 'thedevil666' }
+};
+
+let praises = [];
+
+fastify.get('/', async (req, reply) => {
+  reply.type('text/html').send(`
+    <!DOCTYPE html>
+    <html>
+    <head><title>Login</title></head>
+    <body>
+      <h1>Praise App</h1>
+      <h2>Login</h2>
+      <form action="/login" method="POST">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
+    </body>
+    </html>
+  `);
+});
+
+fastify.post('/login', async (req, reply) => {
+  const { username, password } = req.body;
+  if (!users[username] || users[username].password !== password) {
+    return reply.status(401).send('<h1>Invalid username or password</h1><a href="/">Go Back</a>');
+  }
+
+  const token = fastify.jwt.sign({ username });
+
+  reply
+    .setCookie('token', token, { httpOnly: true, secure: true, sameSite: 'Strict' })
+    .redirect('/praises');
+});
+
+fastify.addHook('onRequest', async (req, reply) => {
+  if (req.url.startsWith('/praises')) {
+    try {
+      const token = req.cookies.token;
+      if (!token) throw new Error();
+      req.user = fastify.jwt.verify(token);
+    } catch (err) {
+      reply
+        .type('text/html')
+        .status(401)
+        .send(`
+          <!DOCTYPE html>
+          <html>
+          <head><title>Unauthorized</title></head>
+          <body>
+            <h1>Unauthorized</h1>
+            <p>You must be logged in to access this page.</p>
+            <a href="/">Login</a>
+          </body>
+          </html>
+        `);
+    }
+  }
+});
+
+fastify.get('/praises', async (req, reply) => {
+  reply.type('text/html').send(`
+    <!DOCTYPE html>
+    <html>
+    <head><title>Praises</title></head>
+    <body>
+      <h1>Submit a Praise</h1>
+      <form action="/praises" method="POST">
+        <input type="text" name="praise" placeholder="Enter Praise" required>
+        <button type="submit">Submit</button>
+      </form>
+
+      <h2>All Praises</h2>
+      <ul>
+        ${praises
+          .map(
+            (p, index) => `
+            <li>
+              <form action="/praises/${index}" method="POST">
+                <input type="text" name="updated_praise" value="${p}" required>
+                <button type="submit">Update</button>
+              </form>
+
+              <form action="/praises/delete/${index}" method="POST">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit">Delete</button>
+              </form>
+            </li>
+          `
+          )
+          .join('')}
+      </ul>
+
+      <form action="/logout" method="POST">
+        <button type="submit">Logout</button>
+      </form>
+    </body>
+    </html>
+  `);
+});
+
+fastify.post('/praises', async (req, reply) => {
+  const { praise } = req.body;
+  if (!praise) return reply.status(400).send('<h1>Praise is required</h1><a href="/praises">Go Back</a>');
+
+  praises.push(praise);
+  reply.redirect('/praises');
+});
+
+fastify.post('/logout', async (req, reply) => {
+  reply
+    .clearCookie('token', { path: '/' })
+    .redirect('/');
+});
+
+fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
+  if (err) throw err;
+  console.log(`Server running at ${address}`);
+});
+```
+You can start the server with `node server.js` from your command line. Notice that our user data is only stored in local memory, so everytime the server resets, that data is gone. Also note that both users share the same data. How would you separate each user's data?
+
+### Allowing updates and deletion in our API
+These two new routes in `server.js` will allow for the client to send special POST requests to update or delete existing data. 
+```js
+fastify.post('/praises/:id', async (req, reply) => {
+  const { id } = req.params;
+  const { updated_praise } = req.body;
+  const index = parseInt(id, 10);
+
+  if (!updated_praise) {
+    return reply.status(400).send('<h1>Praise is required</h1><a href="/praises">Go Back</a>');
+  }
+
+  if (!isNaN(index) && index >= 0 && index < praises.length) {
+    praises[index] = updated_praise;
+  }
+
+  reply.redirect('/praises');
+});
+
+
+fastify.post('/praises/delete/:id', async (req, reply) => {
+  const { id } = req.params;
+  const index = parseInt(id, 10);
+
+  if (!isNaN(index) && index >= 0 && index < praises.length) {
+    praises.splice(index, 1);
+  }
+
+  reply.redirect('/praises');
+});
+```

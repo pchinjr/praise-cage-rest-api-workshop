@@ -1,0 +1,19 @@
+{
+  "name": "praise-cage-rest-api-workshop",
+  "version": "1.0.0",
+  "description": "Norfolk JS 2025 Workshop on REST APIs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/formbody": "^8.0.2",
+    "@fastify/jwt": "^9.0.4",
+    "fastify": "^5.2.1"
+  }
+}

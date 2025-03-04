@@ -1,9 +1,21 @@
 # praise-cage-rest-api-workshop
 Norfolk JS 2025 Workshop on REST APIs
 
-## Prerequisites 
+## **Getting Started with HTML and an HTTP Endpoint**  
 
-Use this repo to create a codespace, and you can use your GitHub account to register for a Val.town account. 
+To begin, **create a Codespace** from this repo and **set up a Val.town account** to handle form submissions.
+
+### **🔹 Create a Codespace**
+1. Fork this repository.  
+2. In your forked repo, go to **Code → Codespaces** and create a new Codespace.  
+3. This gives you an online dev environment to edit and run the project.
+
+### **🔹 Set Up a Val.town Account**
+1. Go to [Val.town](https://val.town) and sign in with your **GitHub account**.  
+2. Create a new **HTTP val** to handle form submissions.  
+3. Copy your Val.town function’s **endpoint URL**—you’ll use this in your `index.html` form.
+
+Once set up, you’ll use **Val.town as your backend** and **Codespaces as your workspace**. 🚀
 
 ### Create a Static HTML Page with a `<form>` Element to POST
 

@@ -25,9 +25,9 @@ Create an `/public/index.html` file and add the following code:
 </body>
 </html>
 ```
-Serve your static HTML with `npx live-server` in the console. Hit 'Y' to accept downloading, if it asks, first time only. Make note of the proxy URL VSCode generates for you. 
+Serve your static HTML with `npx live-server` in the console. Hit 'Y' to accept downloading, if it asks, first time only. Make note of the proxy URL Codespaces generates for you. It is available as an environment variable `echo $CODESPACE_NAME`  
 
-### Create a Val Town HTTP Endpoint to Receive Form-Encoded Data and Respond with JSON
+### Create a Val.town HTTP Endpoint to Receive Form-Encoded Data and Respond with JSON
 
 Create a new HTTP Val in Val Town and add the following code:
 
@@ -65,6 +65,8 @@ export default async function(req) {
 ### No Client-Side JavaScript Required to Send Data
 - The form submission works **without JavaScript**.
 - The browser directly handles sending form data to the Val Town API.
+- The browser has only two methods for <form> elements, GET and POST
+- POST requests contain form-encoded data
 
 ### Update Val Town HTTP Endpoint to Return a Redirect to an HTML Page
 Modify the Val Town function to redirect users back to the form page after submitting a praise:
@@ -82,7 +84,7 @@ export default async function(req) {
     // Redirect back to the form page
     return new Response(null, {
       status: 302,
-      headers: { "Location": "https://your-static-page-url.com" } // Update with actual form page URL
+      headers: { "Location": "https://your-codespace-proxy-url.com" } // Update with Codespaces proxy URL
     });
   }
 
@@ -96,7 +98,7 @@ export default async function(req) {
 
 ### Use HTML Page to Issue a GET Request to the Val Town HTTP Endpoint
 
-Modify the `index.html` file to include a button for fetching all stored praises:
+Modify the `index.html` file to include a button for fetching all stored praises as JSON:
 
 ```html
 <form action="https://<VALTOWNUSER>-<VALTOWNFUNCTION>.web.val.run" method="GET">
@@ -146,6 +148,7 @@ export default async function(req) {
   return Response.json({ error: 'Method not allowed.' }, { status: 405 });
 }
 ```
+Congratulations, you know have a server rendered page!
 
 
 Modify the Val Town function to return an HTML page instead of JSON:
@@ -190,11 +193,11 @@ export default async function(req) {
 }
 ```
 
-### Serving Static Files Before Building the API
+## Serving Static Files Before Building the API
 
-Before setting up a new API layer, we will serve static files from the local file system. This allows us to load `index.html` and any other static assets without relying on `npx live-server`.
+Before setting up a new API layer, we will serve static files from the local file system. This allows us to load `index.html` and any other static assets without using `npx live-server`. Instead, we'll make a new server using Node's HTTP module. 
 
-#### Setting Up Static File Serving
+### Setting Up Static File Serving
 Create a new file called `server.js` and add the following code:
 
 ```js
@@ -224,8 +227,9 @@ server.listen(3000, () => {
   console.log('Server running at http://localhost:3000');
 });
 ```
+We now have written server code that handles serving static files. How would we load CSS files? 
 
-#### Running the Static Server
+### Running the Static Server
 1. Save the file as `server.js`.
 2. Run the server with:
    ```sh
@@ -235,16 +239,16 @@ server.listen(3000, () => {
 
 Once this is working, we can proceed to add API functionality.
 
-### Transitioning to a Local Development Server
+## Transitioning to a Local Development Server
 
 Now that we have served static files, the next step is to create a local development server that mirrors the same functionality as the Val Town endpoint. This allows attendees to seamlessly switch between the Val Town API and their own local server while maintaining the same RESTful functionality.
 
 We're going to use Node.js's built-in `http` module. This allows you to switch endpoints and see identical results, but now running in their own codespace.
 
-#### Adding API Functionality
+### Adding API Functionality
 
 Now that our server can serve static files, let's extend it to handle API routes for submitting and retrieving praises.
-Create a new file called `server.js` and add the following code:
+Add the following code to `server.js`:
 
 ```js
 const { URLSearchParams } = require('url'); // add to parse URL parameters
@@ -322,8 +326,8 @@ server.listen(3000, () => {
 #### Switching Endpoints
 - Attendees can now switch between their Val Town endpoint and their local `http://localhost:3000/praises` to see the same results, demonstrating how RESTful APIs function consistently across environments.
 
-### Adding Authentication Hooks
-We will now add an authenication layer to our API using JWTs. To handle the new complexity, we can move to a framework that implements some request/response lifecycle hooks. This means the framework will give us an interface to do some processing during the request and response negotiations. The framework we'll use is Fastify.
+### Adding Authentication Hooks with Different Architecture
+We will now add an authenication layer to our API using JWTs. To handle the new complexity, we can move to a framework that implements some request/response lifecycle hooks. This means the framework will give us an interface to do some processing during the request and response negotiations. The framework we'll use is Fastify. Also, we'll move to fully server rendered content for all pages. This lets the server compile the dynamic data and respond with a string of HTML that the browser will render.
 ```bash
 npm init -y
 npm install fastify @fastify/cookie @fastify/formbody @fastify/jwt
@@ -369,7 +373,7 @@ fastify.get('/', async (req, reply) => {
 fastify.post('/login', async (req, reply) => {
   const { username, password } = req.body;
   if (!users[username] || users[username].password !== password) {
-    return reply.status(401).send('<h1>Invalid username or password</h1><a href="/">Go Back</a>');
+    return reply.status(401).type('text/html').send('<h1>Invalid username or password</h1><a href="/">Go Back</a>');
   }
 
   const token = fastify.jwt.sign({ username });
@@ -428,7 +432,6 @@ fastify.get('/praises', async (req, reply) => {
               </form>
 
               <form action="/praises/delete/${index}" method="POST">
-                <input type="hidden" name="_method" value="DELETE">
                 <button type="submit">Delete</button>
               </form>
             </li>
@@ -447,7 +450,7 @@ fastify.get('/praises', async (req, reply) => {
 
 fastify.post('/praises', async (req, reply) => {
   const { praise } = req.body;
-  if (!praise) return reply.status(400).send('<h1>Praise is required</h1><a href="/praises">Go Back</a>');
+  if (!praise) return reply.status(400).type('text/html').send('<h1>Praise is required</h1><a href="/praises">Go Back</a>');
 
   praises.push(praise);
   reply.redirect('/praises');
@@ -464,7 +467,9 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
   console.log(`Server running at ${address}`);
 });
 ```
-You can start the server with `node server.js` from your command line. Notice that our user data is only stored in local memory, so everytime the server resets, that data is gone. Also note that both users share the same data. How would you separate each user's data?
+You can start the server with `node server.js` from your command line. 
+
+Notice that the JWT has no expiration, can it be intercepted and reused? How would you rotate or refresh tokens?
 
 ### Allowing updates and deletion in our API
 These two new routes in `server.js` will allow for the client to send special POST requests to update or delete existing data. 
@@ -477,7 +482,7 @@ fastify.post('/praises/:id', async (req, reply) => {
   if (!updated_praise) {
     return reply.status(400).send('<h1>Praise is required</h1><a href="/praises">Go Back</a>');
   }
-
+  // ensure `index` is a valid number and within array bounds
   if (!isNaN(index) && index >= 0 && index < praises.length) {
     praises[index] = updated_praise;
   }
@@ -497,3 +502,4 @@ fastify.post('/praises/delete/:id', async (req, reply) => {
   reply.redirect('/praises');
 });
 ```
+Notice that our user data is only stored in local memory, so everytime the server resets, that data is gone. Also note that both users share the same data. How would you separate each user's data?

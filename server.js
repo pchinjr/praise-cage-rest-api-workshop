@@ -37,7 +37,7 @@ fastify.get('/', async (req, reply) => {
 fastify.post('/login', async (req, reply) => {
   const { username, password } = req.body;
   if (!users[username] || users[username].password !== password) {
-    return reply.status(401).send('<h1>Invalid username or password</h1><a href="/">Go Back</a>');
+    return reply.status(401).type('text/html').send('<h1>Invalid username or password</h1><a href="/">Go Back</a>');
   }
 
   const token = fastify.jwt.sign({ username });
@@ -96,7 +96,6 @@ fastify.get('/praises', async (req, reply) => {
               </form>
 
               <form action="/praises/delete/${index}" method="POST">
-                <input type="hidden" name="_method" value="DELETE">
                 <button type="submit">Delete</button>
               </form>
             </li>
@@ -115,7 +114,7 @@ fastify.get('/praises', async (req, reply) => {
 
 fastify.post('/praises', async (req, reply) => {
   const { praise } = req.body;
-  if (!praise) return reply.status(400).send('<h1>Praise is required</h1><a href="/praises">Go Back</a>');
+  if (!praise) return reply.status(400).type('text/html').send('<h1>Praise is required</h1><a href="/praises">Go Back</a>');
 
   praises.push(praise);
   reply.redirect('/praises');
@@ -127,7 +126,7 @@ fastify.post('/praises/:id', async (req, reply) => {
   const index = parseInt(id, 10);
 
   if (!updated_praise) {
-    return reply.status(400).send('<h1>Praise is required</h1><a href="/praises">Go Back</a>');
+    return reply.status(400).type('text/html').send('<h1>Praise is required</h1><a href="/praises">Go Back</a>');
   }
 
   if (!isNaN(index) && index >= 0 && index < praises.length) {

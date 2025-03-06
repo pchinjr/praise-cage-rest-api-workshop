@@ -210,9 +210,7 @@ Once this is working, we can proceed to add API functionality.
 
 ### Transitioning to a Local Development Server
 
-Now that we have served static files, the next step is to create a local development server that mirrors the same functionality as the Val Town endpoint. This allows attendees to seamlessly switch between the Val Town API and their own local server while maintaining the same RESTful functionality.
-
-We're going to use Node.js's built-in `http` module. This allows you to switch endpoints and see identical results, but now running in their own codespace.
+Now that we have served static files, the next step is to create a local development server that mirrors the same functionality as the Val Town endpoint. This allows you to seamlessly switch between the Val Town API and their own local server while maintaining the same RESTful functionality. We're going to start with Node.js's built-in `http` module. 
 
 ### Adding API Functionality
 

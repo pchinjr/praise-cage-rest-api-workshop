@@ -472,3 +472,46 @@ fastify.post('/praises/delete/:id', async (req, reply) => {
 });
 ```
 Notice that our user data is only stored in local memory, so everytime the server resets, that data is gone. Also note that both users share the same data. How would you separate each user's data?
+
+## Stuff we did
+- Serve static HTML
+- HTML `<forms>` element
+- HTTP methods
+  - `GET`
+  - `POST`
+- External API Endpoints
+  - webhooks
+  - returning JSON
+  - returning HTML
+- Server side rendering
+- Build a stand alone server
+- Stateless auth sessions with JWT
+- Server side routing
+- RESTful API Design
+  - CRUD functionality
+
+## Stuff you could add
+- Client side JavaScript
+  - `fetch()` API
+  - URL Parameters
+    - Query Strings
+    - Path Parameters
+- User Management
+  - roles 
+  - permissions
+  - OAuth
+- Persistent Data
+  - databases
+  - flat file lookups
+- "Real Time" Updates
+  - WebSockets
+  - Server Sent Events
+- SPA vs MPA
+  - client vs server responsibilities
+- Alternatives to REST
+  - GraphQL
+  - tRPC
+- Deployment and Operation Models
+  - monolith
+  - microservice
+  - CI/CD 

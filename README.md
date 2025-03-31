@@ -51,6 +51,7 @@ export default async function(request: Request) {
 
   // Retrieve stored praises or initialize to empty array
   const stored = (await blob.getJSON(BLOB_KEY)) ?? [];
+  // Ensures Blob JSON is an array
   const praises = Array.isArray(stored) ? stored : [];
 
   if (request.method === "GET") {
@@ -113,10 +114,11 @@ export default async function(request: Request) {
       await blob.setJSON(BLOB_KEY, praises);
     }
 
+    // Redirect user to form page
     return new Response(null, {
       status: 302,
       headers: {
-        Location: "https://miniature-sniffle-7gqjqp79w62x6p5-8080.app.github.dev/public/",
+        Location: "https://<YOUR_GITHUB_PROXY_URL>.app.github.dev/public/",
       },
     });
   }
@@ -180,7 +182,7 @@ export default async function(request: Request) {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: "https://miniature-sniffle-7gqjqp79w62x6p5-8080.app.github.dev/public/",
+        Location: "https://<YOUR_GITHUB_PROXY_URL>.app.github.dev/public/",
       },
     });
   }
@@ -238,11 +240,11 @@ Once this is working, we can proceed to add API functionality.
 
 ### Transitioning to a Local Development Server
 
-Now that we have served static files, the next step is to create a local development server that mirrors the same functionality as the Val Town endpoint. This allows you to seamlessly switch between the Val Town API and their own local server while maintaining the same RESTful functionality. We're going to start with Node.js's built-in `http` module. 
+Now that we have served static files, the next step is to mirror the functionality of the Val Town endpoint. This allows you to seamlessly switch between the Val Town API and your own server while maintaining the same RESTful functionality.
 
 ### Adding API Functionality
 
-Now that our server can serve static files, let's extend it to handle API routes for submitting and retrieving praises.
+After serving static files, let's extend the server to handle API routes for submitting and retrieving praises.
 Add the following code to `server.js`:
 
 ```js
@@ -255,6 +257,7 @@ const server = http.createServer(async (req, res) => {
   // additional HTTP API routes 
   if (req.method === 'POST' && req.url === '/praises') { // notice new route that we define
     let body = '';
+    // Assemble form data from the client
     req.on('data', chunk => {
       body += chunk.toString();
     });
@@ -265,7 +268,7 @@ const server = http.createServer(async (req, res) => {
       if (praise) {
         praises.push(praise);
       }
-      res.writeHead(302, { 'Location': '/' });
+      res.writeHead(302, { 'Location': '/' }); // redirect to index.html
       res.end();
     });
     return;
@@ -308,7 +311,7 @@ server.listen(3000, () => {
 });
 ```
 #### Switching Endpoints
-- Attendees can now switch between their Val Town endpoint and their local `http://localhost:3000/praises` to see the same results, demonstrating how RESTful APIs function consistently across environments. Update `index.html` to use the new route on our local node server.
+- You can now switch between the Val Town endpoint and your local endpoint `http://localhost:3000/praises` to see the same results, demonstrating how RESTful APIs function consistently across environments. Update `index.html` to use the new route on our local node server.
 
 ```html
 <h1>Submit a Praise</h1>
@@ -331,8 +334,6 @@ server.listen(3000, () => {
 3. Open `http://localhost:3000` in a browser to see the form.
 4. Submit a praise, then refresh to see it persist.
 5. Open `http://localhost:3000/praises` in a browser to see the stored praises in JSON format.
-
-
 
 ## Add Authentication Hooks with Different Architecture
 We will now add an authenication layer to our API using JWTs. To handle the new complexity, we can move to a framework that implements some request/response lifecycle hooks. This means the framework will give us an interface to do some processing during the request and response negotiations. The framework we'll use is Fastify. Also, we'll move to fully server rendered content for all pages. This lets the server compile the dynamic data and respond with a string of HTML that the browser will render.
@@ -360,13 +361,13 @@ const users = {
 
 let praises = [];
 
-fastify.get('/', async (req, reply) => {
-  reply.type('text/html').send(`
+fastify.get('/', async (req, res) => {
+  res.type('text/html').send(`
     <!DOCTYPE html>
     <html>
     <head><title>Login</title></head>
     <body>
-      <h1>Praise App</h1>
+      <h1>Praise Cage REST API Workshop</h1>
       <h2>Login</h2>
       <form action="/login" method="POST">
         <input type="text" name="username" placeholder="Username" required>
@@ -378,27 +379,27 @@ fastify.get('/', async (req, reply) => {
   `);
 });
 
-fastify.post('/login', async (req, reply) => {
+fastify.post('/login', async (req, res) => {
   const { username, password } = req.body;
   if (!users[username] || users[username].password !== password) {
-    return reply.status(401).type('text/html').send('<h1>Invalid username or password</h1><a href="/">Go Back</a>');
+    return res.status(401).type('text/html').send('<h1>Invalid username or password</h1><a href="/">Go Back</a>');
   }
 
   const token = fastify.jwt.sign({ username });
 
-  reply
+  res
     .setCookie('token', token, { httpOnly: true, secure: true, sameSite: 'Strict' })
     .redirect('/praises');
 });
 
-fastify.addHook('onRequest', async (req, reply) => {
+fastify.addHook('onRequest', async (req, res) => {
   if (req.url.startsWith('/praises')) {
     try {
       const token = req.cookies.token;
       if (!token) throw new Error();
       req.user = fastify.jwt.verify(token);
     } catch (err) {
-      reply
+      res
         .type('text/html')
         .status(401)
         .send(`
@@ -416,11 +417,11 @@ fastify.addHook('onRequest', async (req, reply) => {
   }
 });
 
-fastify.get('/praises', async (req, reply) => {
+fastify.get('/praises', async (req, res) => {
   reply.type('text/html').send(`
     <!DOCTYPE html>
     <html>
-    <head><title>Praises</title></head>
+    <head><title>Fastify Backed Praises</title></head>
     <body>
       <h1>Submit a Praise</h1>
       <form action="/praises" method="POST">
@@ -456,16 +457,16 @@ fastify.get('/praises', async (req, reply) => {
   `);
 });
 
-fastify.post('/praises', async (req, reply) => {
+fastify.post('/praises', async (req, res) => {
   const { praise } = req.body;
   if (!praise) return reply.status(400).type('text/html').send('<h1>Praise is required</h1><a href="/praises">Go Back</a>');
 
   praises.push(praise);
-  reply.redirect('/praises');
+  res.redirect('/praises');
 });
 
-fastify.post('/logout', async (req, reply) => {
-  reply
+fastify.post('/logout', async (req, res) => {
+  res
     .clearCookie('token', { path: '/' })
     .redirect('/');
 });
@@ -482,7 +483,7 @@ Notice that the JWT has no expiration, can it be intercepted and reused? How wou
 ### Allowing updates and deletion in our API
 These two new routes in `server.js` will allow for the client to send special POST requests to update or delete existing data. 
 ```js
-fastify.post('/praises/:id', async (req, reply) => {
+fastify.post('/praises/:id', async (req, res) => {
   const { id } = req.params;
   const { updated_praise } = req.body;
   const index = parseInt(id, 10);
@@ -495,11 +496,11 @@ fastify.post('/praises/:id', async (req, reply) => {
     praises[index] = updated_praise;
   }
 
-  reply.redirect('/praises');
+  res.redirect('/praises');
 });
 
 
-fastify.post('/praises/delete/:id', async (req, reply) => {
+fastify.post('/praises/delete/:id', async (req, res) => {
   const { id } = req.params;
   const index = parseInt(id, 10);
 
@@ -507,7 +508,7 @@ fastify.post('/praises/delete/:id', async (req, reply) => {
     praises.splice(index, 1);
   }
 
-  reply.redirect('/praises');
+  res.redirect('/praises');
 });
 ```
 Notice that our user data is only stored in local memory, so everytime the server resets, that data is gone. Also note that both users share the same data. How would you separate each user's data?

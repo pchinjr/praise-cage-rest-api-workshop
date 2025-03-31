@@ -25,7 +25,7 @@ Create an `/public/index.html` file and add the following code:
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Val Town Form Example</title>
+  <title>Praise Cage REST API Workshop</title>
 </head>
 <body>
   <h1>Submit a Praise</h1>
@@ -44,29 +44,36 @@ Serve your static HTML with `npx live-server` in the console. Hit 'Y' to accept 
 Create a new HTTP Val in Val Town and add the following code:
 
 ```js
-let praises = []; // Stores praises (resets when the val restarts)
+import { blob } from "https://esm.town/v/std/blob";
 
-export default async function(req) {
-  if (req.method === 'POST') {
-    const formData = await req.formData();
-    const praise = formData.get('praise');
+export default async function(request: Request) {
+  const BLOB_KEY = "stored-praises";
 
-    if (praise) {
+  // Retrieve stored praises or initialize to empty array
+  const stored = (await blob.getJSON(BLOB_KEY)) ?? [];
+  const praises = Array.isArray(stored) ? stored : [];
+
+  if (request.method === "GET") {
+    return Response.json(praises);
+  }
+
+  if (request.method === "POST") {
+    const formData = await request.formData();
+    const praise = formData.get("praise");
+
+    if (typeof praise === "string" && praise.trim() !== "") {
       praises.push(praise);
+      await blob.setJSON(BLOB_KEY, praises);
     }
 
-    // Return JSON response
+     // Return JSON response
     return Response.json({
       success: true,
       praises,
     });
   }
 
-  if (req.method === 'GET') {
-    return Response.json(praises);
-  }
-
-  return Response.json({ error: 'Method not allowed.' }, { status: 405 });
+  return Response.json({ error: "Method not allowed." }, { status: 405 });
 }
 ```
 
@@ -84,33 +91,43 @@ export default async function(req) {
 Modify the Val Town function to redirect users back to the form page after submitting a praise:
 
 ```js
-export default async function(req) {
-  if (req.method === 'POST') {
-    const formData = await req.formData();
-    const praise = formData.get('praise');
+import { blob } from "https://esm.town/v/std/blob";
 
-    if (praise) {
-      praises.push(praise);
-    }
+export default async function(request: Request) {
+  const BLOB_KEY = "stored-praises";
 
-    // Redirect back to the form page
-    return new Response(null, {
-      status: 302,
-      headers: { "Location": "https://your-codespace-proxy-url.com" } // Update with Codespaces proxy URL
-    });
-  }
+  // Retrieve stored praises or initialize to empty array
+  const stored = (await blob.getJSON(BLOB_KEY)) ?? [];
+  const praises = Array.isArray(stored) ? stored : [];
 
-  if (req.method === 'GET') {
+  if (request.method === "GET") {
     return Response.json(praises);
   }
 
-  return Response.json({ error: 'Method not allowed.' }, { status: 405 });
+  if (request.method === "POST") {
+    const formData = await request.formData();
+    const praise = formData.get("praise");
+
+    if (typeof praise === "string" && praise.trim() !== "") {
+      praises.push(praise);
+      await blob.setJSON(BLOB_KEY, praises);
+    }
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "https://miniature-sniffle-7gqjqp79w62x6p5-8080.app.github.dev/public/",
+      },
+    });
+  }
+
+  return Response.json({ error: "Method not allowed." }, { status: 405 });
 }
 ```
 
 ### Use HTML Page to Issue a GET Request to the Val Town HTTP Endpoint
 
-Modify the `index.html` file to include a button for fetching all stored praises as JSON:
+Add a new button to `index.html` for issuing a GET request for all stored praises as JSON:
 
 ```html
 <form action="https://<VALTOWNUSER>-<VALTOWNFUNCTION>.web.val.run" method="GET">
@@ -122,27 +139,21 @@ Modify the `index.html` file to include a button for fetching all stored praises
 Modify the Val Town function to return an HTML page instead of JSON:
 
 ```js
-export default async function(req) {
-  if (req.method === 'POST') {
-    const formData = await req.formData();
-    const praise = formData.get('praise');
+import { blob } from "https://esm.town/v/std/blob";
 
-    if (praise) {
-      praises.push(praise);
-    }
+export default async function(request: Request) {
+  const BLOB_KEY = "stored-praises";
 
-    return new Response(null, {
-      status: 302,
-      headers: { "Location": "https://your-static-page-url.com" } // Update with actual form page URL
-    });
-  }
+  // Retrieve stored praises or initialize to empty array
+  const stored = (await blob.getJSON(BLOB_KEY)) ?? [];
+  const praises = Array.isArray(stored) ? stored : [];
 
   if (req.method === 'GET') {
     // Return HTML with praises
     const htmlContent = `
       <!DOCTYPE html>
       <html>
-      <head><title>Praises</title></head>
+      <head><title>Server Rendered Praises</title></head>
       <body>
         <h1>Praise List</h1>
         <ul>
@@ -157,7 +168,24 @@ export default async function(req) {
     });
   }
 
-  return Response.json({ error: 'Method not allowed.' }, { status: 405 });
+  if (request.method === "POST") {
+    const formData = await request.formData();
+    const praise = formData.get("praise");
+
+    if (typeof praise === "string" && praise.trim() !== "") {
+      praises.push(praise);
+      await blob.setJSON(BLOB_KEY, praises);
+    }
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "https://miniature-sniffle-7gqjqp79w62x6p5-8080.app.github.dev/public/",
+      },
+    });
+  }
+
+  return Response.json({ error: "Method not allowed." }, { status: 405 });
 }
 ```
 Congratulations, you know have a server rendered page!
@@ -176,7 +204,7 @@ const path = require('path');
 
 const server = http.createServer((req, res) => {
   if (req.method === 'GET' && req.url === '/') {
-    fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
+    fs.readFile(path.join(__dirname, '/public/index.html'), (err, data) => {
       if (err) {
         res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end('Internal Server Error');
@@ -196,7 +224,7 @@ server.listen(3000, () => {
   console.log('Server running at http://localhost:3000');
 });
 ```
-We now have written server code that handles serving static files. How would we load CSS files? 
+We now have written server code that handles serving static files.
 
 ### Running the Static Server
 1. Save the file as `server.js`.
@@ -244,7 +272,6 @@ const server = http.createServer(async (req, res) => {
   }
   
   if (req.method === 'GET' && req.url === '/praises?') { // notice new route that we define
-    res.writeHead(200, { 'Content-Type': 'text/html' });
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -271,6 +298,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // below is the same as previous step
   res.writeHead(405, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ error: 'Bruh, Method not allowed.' }));
 });
@@ -278,6 +306,20 @@ const server = http.createServer(async (req, res) => {
 server.listen(3000, () => {
   console.log('Server running at http://localhost:3000');
 });
+```
+#### Switching Endpoints
+- Attendees can now switch between their Val Town endpoint and their local `http://localhost:3000/praises` to see the same results, demonstrating how RESTful APIs function consistently across environments. Update `index.html` to use the new route on our local node server.
+
+```html
+<h1>Submit a Praise</h1>
+  <form action="/praises" method="POST"> <!-- update with your HTTP endpoint URL -->
+    <label for="praise">Enter Praise:</label>
+    <input type="text" name="praise" id="praise" required />
+    <button type="submit">Submit</button>
+  </form>
+  <form action="/praises" method="GET">
+    <button type="submit">View Praises</button>
+  </form>
 ```
 
 #### Running the Local Server
@@ -290,8 +332,7 @@ server.listen(3000, () => {
 4. Submit a praise, then refresh to see it persist.
 5. Open `http://localhost:3000/praises` in a browser to see the stored praises in JSON format.
 
-#### Switching Endpoints
-- Attendees can now switch between their Val Town endpoint and their local `http://localhost:3000/praises` to see the same results, demonstrating how RESTful APIs function consistently across environments.
+
 
 ## Add Authentication Hooks with Different Architecture
 We will now add an authenication layer to our API using JWTs. To handle the new complexity, we can move to a framework that implements some request/response lifecycle hooks. This means the framework will give us an interface to do some processing during the request and response negotiations. The framework we'll use is Fastify. Also, we'll move to fully server rendered content for all pages. This lets the server compile the dynamic data and respond with a string of HTML that the browser will render.

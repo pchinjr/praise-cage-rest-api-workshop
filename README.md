@@ -150,7 +150,7 @@ export default async function(request: Request) {
   const stored = (await blob.getJSON(BLOB_KEY)) ?? [];
   const praises = Array.isArray(stored) ? stored : [];
 
-  if (req.method === 'GET') {
+  if (request.method === 'GET') {
     // Return HTML with praises
     const htmlContent = `
       <!DOCTYPE html>

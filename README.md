@@ -765,6 +765,114 @@ sequenceDiagram
 └─────────────────┘    HTTP Response   └─────────────────┘
 ```
 
+At its core, the modern web is built on a simple, powerful pattern: **a client makes a request, and a server responds**. This fundamental model — often referred to as **client-server architecture** — has remained the backbone of networked computing since the earliest days of the internet.
+
+This workshop gave us hands-on experience building software that embraces that model, from the ground up:
+
+### 🌐 The Client-Server Model
+
+We built a **web client** — an HTML form in a browser — that communicates with a **server** via HTTP requests. The browser acts as a **client**, initiating actions like submitting a form (`POST`) or requesting data (`GET`). The server listens for those requests, processes them, and sends back responses — either HTML pages or JSON data.
+
+This pattern powers everything from blogs and web apps to APIs and microservices. Whether it's your browser loading a site or your phone fetching weather data, it’s always about structured communication between clients and servers.
+
+### 🔁 The Request-Response Cycle
+
+HTTP (Hypertext Transfer Protocol) defines **how** the client and server talk. It’s a stateless protocol — each request is independent. Here’s what happens in every cycle:
+
+1. **Request**:
+
+   * The browser sends a request to a server with a specific HTTP method (`GET`, `POST`, etc.).
+   * It may include headers, form data, cookies, or query parameters.
+
+2. **Response**:
+
+   * The server sends back a response with a status code (e.g., 200 OK, 404 Not Found).
+   * It includes a body (HTML, JSON, etc.) and headers like `Content-Type`.
+
+By building both sides of this flow — a form that submits and a server that responds — we demystified what’s happening every time you load a webpage or call an API.
+
+### 📜 The Protocols Beneath the Web
+
+HTTP is just one layer in the **stack of protocols** that make the internet work. It sits on top of:
+
+* **TCP/IP**: The low-level transport protocols that move packets across networks.
+* **DNS**: Resolves domain names to IP addresses so we can type `example.com` instead of `93.184.216.34`.
+* **TLS/HTTPS**: Encrypts traffic to keep it secure from snooping.
+
+These protocols were developed decades ago as part of foundational internet research, and they continue to evolve — but the principles remain the same.
+
+```mermaid
+graph TD;
+  A[Browser Client]
+  B[HTTP Server]
+  C[Route: GET /]
+  D[Route: POST /praises]
+  E[Route: GET /praises]
+  F[Route: POST /praises/:id]
+  G[Route: POST /praises/delete/:id]
+  H[Route: POST /login]
+  I[Route: POST /logout]
+
+  A --> C
+  C --> B
+
+  A --> D
+  D --> B
+
+  A --> E
+  E --> B
+
+  A --> F
+  F --> B
+
+  A --> G
+  G --> B
+
+  A --> H
+  H --> B
+
+  A --> I
+  I --> B
+```
+
+```mermaid
+sequenceDiagram
+  participant Browser
+  participant Server
+
+  Browser->>Server: GET /
+  Server-->>Browser: index.html
+
+  Browser->>Server: POST /praises (form data)
+  Server-->>Browser: 302 Redirect to /
+
+  Browser->>Server: GET /praises
+  Server-->>Browser: HTML list of praises
+
+  Browser->>Server: POST /login (username + password)
+  Server-->>Browser: Set-Cookie (JWT), Redirect to /praises
+
+  Browser->>Server: POST /praises/:id (edit form)
+  Server-->>Browser: 302 Redirect to /praises
+
+  Browser->>Server: POST /praises/delete/:id
+  Server-->>Browser: 302 Redirect to /praises
+
+  Browser->>Server: POST /logout
+  Server-->>Browser: Clear-Cookie, Redirect to /
+```
+
+We used this workshop to recreate the classic **web roundtrip** with:
+
+* Static file serving
+* Form submission (POST)
+* Dynamic data rendering (GET)
+* A simple API endpoint that returns JSON
+* Stateless authentication using JWT
+* A real-world example of how the browser interacts with servers
+
+We didn’t just learn web dev tools — we practiced how **networked computers communicate** using shared conventions and open protocols. These are the same foundations that scale up to the largest systems on Earth.
+
 ## 10. What We Accomplished
 - Serve static HTML
 - HTML `<forms>` element

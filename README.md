@@ -250,7 +250,7 @@ Add the following code to `server.js`:
 // add to parse URL parameters
 const { URLSearchParams } = require('url'); 
 // create temporary data structure in memory 
-let praises =
+let praises
 
 const server = http.createServer(async (req, res) => {
 
@@ -274,7 +274,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
   
-  // GET endpoint to view all praises
+  // Additional GET endpoint to view all praises
   if (req.method === 'GET' && req.url === '/praises?') { // notice new route that we define
     const htmlContent = `
       <!DOCTYPE html>

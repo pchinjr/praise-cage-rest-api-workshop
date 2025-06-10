@@ -231,21 +231,27 @@ Congratulations, you now have a server rendered page!
 - Click "View Praises" button - you should see an HTML page with your praises
 - Submit a new praise - you should be redirected back to your form
 
+Certainly! Here is a complete, copy-paste-ready Section 5 for your README. It explicitly shows the progression of your `server.js` file, directs users on how to switch between the Val Town and local endpoints, and removes ambiguity at each step.
+
+---
+
 ## 5. Build Our Own Server
 
-Before setting up a new API layer, we will serve static files from the local file system. This allows us to load `/public/index.html` and any other static assets without using `npx live-server`. Instead, we'll use Node.js.
+This section will guide you step-by-step in building your Node.js server, starting simple and evolving into a RESTful endpoint. Each code snippet is a full working version of `server.js` for that stage—copy and replace your file each time.
 
-### 5a. Setting Up Static File Serving
+---
 
-Create a new file called `server.js` and add the following code:
+### 5a. Initial Version: Serve Static HTML Only
+
+Create a file called `server.js`:
 
 ```js
+// 5a. Initial version: Only serves the static HTML form at "/"
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
 const server = http.createServer((req, res) => {
-  // Handle root request to serve index.html
   if (req.method === 'GET' && req.url === '/') {
     fs.readFile(path.join(__dirname, '/public/index.html'), (err, data) => {
       if (err) {
@@ -258,8 +264,7 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
-  
-  // Handle 404 for unknown routes
+  // All other requests get a 404
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('Not Found');
 });
@@ -269,56 +274,40 @@ server.listen(3000, () => {
 });
 ```
 
-### 5b. Running the Static Server
+> **Checkpoint:**  
+> - Visit `/` in your browser to see the HTML form.  
+> - All other URLs will return 404.
 
-1. Save the file as `server.js`.
-2. Run the server with:
-   ```sh
-   node server.js
-   ```
-3. GitHub Codespaces will provide a proxy link to your development server. In the terminal you can ctrl+click the running server address which should look like `https://localhost:3000`
+---
 
-Once this is working, we can proceed to add API functionality.
+### 5b. Add GET `/praises` Endpoint (Static Response)
 
-### 5c. Transitioning to a Local Development Server
+Add a new GET `/praises` endpoint to serve a static HTML page (no praises yet).
 
-Now that we have served static files, the next step is to mirror the functionality of the Val Town endpoint. This allows you to seamlessly switch between the Val Town API and your own server while maintaining your workflow.
-
-### 5d. Adding API Functionality
-
-After serving static files, let's extend the server to handle API routes for submitting and retrieving praises.
-Add the following code to `server.js`:
+Replace `server.js` with:
 
 ```js
-// add to parse URL parameters
-const { URLSearchParams } = require('url'); 
-// create temporary data structure in memory 
-let praises = []
+// 5b. Static GET /praises endpoint added
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
-const server = http.createServer(async (req, res) => {
-
-  // POST endpoint to add a new praise
-  if (req.method === 'POST' && req.url === '/praises') { // notice new route that we define
-    let body = '';
-    // Assemble form data from the client
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
-    req.on('end', () => {
-      const formData = new URLSearchParams(body); // Parse form data
-      const praise = formData.get('praise'); // Extract praise text
-      
-      if (praise) {
-        praises.push(praise);
+const server = http.createServer((req, res) => {
+  if (req.method === 'GET' && req.url === '/') {
+    fs.readFile(path.join(__dirname, '/public/index.html'), (err, data) => {
+      if (err) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Internal Server Error');
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(data);
       }
-      res.writeHead(302, { 'Location': '/' }); // redirect to index.html
-      res.end();
     });
     return;
   }
-  
-  // Additional GET endpoint to view all praises
-  if (req.method === 'GET' && req.url === '/praises?') { // notice new route that we define
+
+  if (req.method === 'GET' && req.url === '/praises') {
+    // Static page: no praises yet
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -326,49 +315,176 @@ const server = http.createServer(async (req, res) => {
       <body>
         <h1>All Praises</h1>
         <ul>
-          ${praises.length > 0 
-            ? praises.map(p => `<li>${p}</li>`).join('')
-            : '<li>No praises yet.</li>'
-          }
+          <li>No praises yet.</li>
         </ul>
         <a href="/">Go Back</a>
       </body>
       </html>
     `;
-
     res.writeHead(200, {
       'Content-Type': 'text/html',
       'Content-Length': Buffer.byteLength(htmlContent),
-      'Connection': 'close' // Ensures connection is properly closed
+      'Connection': 'close'
     });
     res.end(htmlContent);
     return;
   }
-  // ... rest of code from previous step
 
+  // All other requests get a 404
+  res.writeHead(404, { 'Content-Type': 'text/plain' });
+  res.end('Not Found');
+});
+
+server.listen(3000, () => {
+  console.log('Server running at http://localhost:3000');
 });
 ```
 
-### 5e. Switching Endpoints
+> **Checkpoint:**  
+> - Visit `/` for the form, `/praises` for the (static) list.
 
-- You can now switch between the Val Town endpoint and your local endpoint by updating `index.html` to use the new route on our local node server:
+---
 
-```html
-<h1>Submit a Praise</h1>
-  <form action="/praises" method="POST"> <!-- Points to our local server -->
-    <label for="praise">Enter Praise:</label>
-    <input type="text" name="praise" id="praise" required />
-    <button type="submit">Submit</button>
-  </form>
-  <form action="/praises" method="GET">
-    <button type="submit">View Praises</button>
-  </form>
+### 5c. Add In-Memory Storage and POST `/praises` (Dynamic)
+
+Store praises in memory and let users POST them via the form.
+
+Replace the entire file with:
+
+```js
+// 5c. Dynamic GET /praises and POST /praises with in-memory storage
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const { URLSearchParams } = require('url');
+
+let praises = []; // In-memory storage
+
+const server = http.createServer((req, res) => {
+  if (req.method === 'GET' && req.url === '/') {
+    fs.readFile(path.join(__dirname, '/public/index.html'), (err, data) => {
+      if (err) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Internal Server Error');
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(data);
+      }
+    });
+    return;
+  }
+
+  if (req.method === 'GET' && req.url === '/praises') {
+    // Show all praises from memory (or "No praises yet")
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head><title>Praise List</title></head>
+      <body>
+        <h1>All Praises</h1>
+        <ul>
+          ${praises.length > 0
+            ? praises.map(p => `<li>${p}</li>`).join('')
+            : '<li>No praises yet.</li>'}
+        </ul>
+        <a href="/">Go Back</a>
+      </body>
+      </html>
+    `;
+    res.writeHead(200, {
+      'Content-Type': 'text/html',
+      'Content-Length': Buffer.byteLength(htmlContent),
+      'Connection': 'close'
+    });
+    res.end(htmlContent);
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/praises') {
+    // Handle form POST and store praise in memory
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      const formData = new URLSearchParams(body);
+      const praise = formData.get('praise');
+      if (praise) {
+        praises.push(praise);
+      }
+      // Redirect back to form after submission
+      res.writeHead(302, { 'Location': '/' });
+      res.end();
+    });
+    return;
+  }
+
+  // All other requests get a 404
+  res.writeHead(404, { 'Content-Type': 'text/plain' });
+  res.end('Not Found');
+});
+
+server.listen(3000, () => {
+  console.log('Server running at http://localhost:3000');
+});
 ```
 
-### 5f. Checkpoint 3: Local API Server
-- Submit a praise using your local server - you should be redirected to the form
-- View praises - you should see an HTML page with your praises
-- Try stopping and restarting the server - note that praises are lost (stored in memory)
+> **Checkpoint:**  
+> - Submitting the form on `/` (POST) now saves a praise in memory.  
+> - `/praises` now displays all entered praises (until the server restarts).
+
+---
+
+### 5d. Switching Your HTML Form Between Val Town and Local Server
+
+As you transition from using Val Town to your local Node.js server, you need to update your `/public/index.html` form actions.
+
+**When using Val Town as your backend:**
+
+```html
+<form action="https://<VALTOWNUSER>-<VALTOWNFUNCTION>.web.val.run" method="POST">
+  <label for="praise">Enter Praise:</label>
+  <input type="text" name="praise" id="praise" required />
+  <button type="submit">Submit</button>
+</form>
+```
+
+**Once your Node.js server is running and can accept POSTs to `/praises`, update your form to:**
+
+```html
+<form action="/praises" method="POST">
+  <label for="praise">Enter Praise:</label>
+  <input type="text" name="praise" id="praise" required />
+  <button type="submit">Submit</button>
+</form>
+```
+
+If you have a “View Praises” button, update that as well:
+
+- For Val Town:  
+  `<form action="https://<VALTOWNUSER>-<VALTOWNFUNCTION>.web.val.run" method="GET">`
+- For your local server:  
+  `<form action="/praises" method="GET">`
+
+**Tip:**  
+When using Codespaces, open the “Ports” tab to get the public URL for your running server if you want to test from your browser.
+
+---
+
+### 5e. Summary Table
+
+| File Version | GET /           | GET /praises           | POST /praises           |
+|--------------|-----------------|------------------------|-------------------------|
+| 5a           | HTML form       | 404                    | 404                     |
+| 5b           | HTML form       | Static HTML page       | 404                     |
+| 5c           | HTML form       | Dynamic praise list    | Stores praise in memory |
+
+---
+
+**Tip:**  
+Always copy and replace your entire `server.js` with each new version above to avoid confusion and ensure smooth progression.
+
+---
 
 ## 6. Add Authentication Hooks with Different Architecture
 

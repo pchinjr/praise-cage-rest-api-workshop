@@ -690,15 +690,15 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
 
 ## 7. API Reference
 
-| Endpoint          | Method | Description                | Auth Required |
-|-------------------|--------|----------------------------|---------------|
-| /                 | GET    | Show login page            | No            |
-| /login            | POST   | Authenticate user          | No            |
-| /praises          | GET    | View all praises           | Yes           |
-| /praises          | POST   | Add a new praise           | Yes           |
-| /praises/:id      | POST   | Update a praise by ID      | Yes           |
-| /praises/delete/:id | POST | Delete a praise by ID     | Yes           |
-| /logout           | POST   | Log user out               | Yes           |
+| Endpoint            | Method | Description                | Auth Required |
+|---------------------|--------|----------------------------|---------------|
+| /                   | GET    | Show login page            | No            |
+| /login              | POST   | Authenticate user          | No            |
+| /praises            | GET    | View all praises           | Yes           |
+| /praises            | POST   | Add a new praise           | Yes           |
+| /praises/:id        | POST   | Update a praise by ID      | Yes           |
+| /praises/delete/:id | POST   | Delete a praise by ID      | Yes           |
+| /logout             | POST   | Log user out               | Yes           |
 
 ## 8. Troubleshooting Tips
 
@@ -710,13 +710,13 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
 ## 9. Workshop Recap: What We've Built
 
 ```
-┌─────────────────┐    HTTP Request     ┌─────────────────┐
+┌─────────────────┐    HTTP Request    ┌─────────────────┐
 │                 │ ─────────────────► │                 │
 │                 │                    │                 │
 │   Web Browser   │                    │   REST Server   │
 │                 │                    │                 │
 │                 │ ◄───────────────── │                 │
-└─────────────────┘    HTTP Response    └─────────────────┘
+└─────────────────┘    HTTP Response   └─────────────────┘
 ```
 
 ## 10. What We Accomplished

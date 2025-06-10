@@ -231,6 +231,22 @@ Congratulations, you now have a server rendered page!
 - Click "View Praises" button - you should see an HTML page with your praises
 - Submit a new praise - you should be redirected back to your form
 
+```mermaid
+sequenceDiagram
+    participant Browser as Web Browser
+    participant ValTown as Val.town HTTP Endpoint
+
+    Browser->>ValTown: POST / (form data: praise)
+    ValTown-->>Browser: JSON response (success, praises)
+    Browser->>ValTown: GET / (view praises)
+    ValTown-->>Browser: JSON or HTML list of praises
+```
+
+
+
+---
+
+You can copy and paste these diagrams directly into your README.md in Mermaid code blocks. Let me know if you want additional detail or another type of diagram!
 
 ## 5. Build Our Own Server
 
@@ -460,6 +476,8 @@ If you have a “View Praises” button, update that as well:
   `<form action="https://<VALTOWNUSER>-<VALTOWNFUNCTION>.web.val.run" method="GET">`
 - For your local server:  
   `<form action="/praises" method="GET">`
+  
+---
 
 **Tip:**  
 When using Codespaces, open the “Ports” tab to get the public URL for your running server if you want to test from your browser.
@@ -474,6 +492,20 @@ When using Codespaces, open the “Ports” tab to get the public URL for your r
 | 5b           | HTML form       | Static HTML page       | 404                     |
 | 5c           | HTML form       | Dynamic praise list    | Stores praise in memory |
 
+```mermaid
+sequenceDiagram
+    participant Browser as Web Browser
+    participant NodeServer as Local Node.js Server
+
+    Browser->>NodeServer: GET / (request form page)
+    NodeServer-->>Browser: index.html
+
+    Browser->>NodeServer: POST /praises (submit praise)
+    NodeServer-->>Browser: Redirect to /
+
+    Browser->>NodeServer: GET /praises (view praises)
+    NodeServer-->>Browser: HTML page with praise list
+```
 ---
 
 **Tip:**  
@@ -672,7 +704,26 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
   console.log(`Server running at ${address}`);
 });
 ```
+```mermaid
+sequenceDiagram
+    participant Browser as Web Browser
+    participant Fastify as Fastify API Server
 
+    Browser->>Fastify: GET / (login page)
+    Fastify-->>Browser: Login HTML
+
+    Browser->>Fastify: POST /login (username, password)
+    Fastify-->>Browser: Set JWT cookie, redirect to /praises
+
+    Browser->>Fastify: GET /praises (with JWT cookie)
+    Fastify-->>Browser: HTML page with praises
+
+    Browser->>Fastify: POST /praises (add praise, with JWT)
+    Fastify-->>Browser: Redirect to /praises
+
+    Browser->>Fastify: POST /logout
+    Fastify-->>Browser: Clear cookie, redirect to /
+```
 ### 6c. Checkpoint 4: Authentication
 - Test login with credentials: username "nic", password "praisecage!"
 - Add, update, and delete praises

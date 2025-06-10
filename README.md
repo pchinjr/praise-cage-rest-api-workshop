@@ -250,7 +250,7 @@ Add the following code to `server.js`:
 // add to parse URL parameters
 const { URLSearchParams } = require('url'); 
 // create temporary data structure in memory 
-let praises
+let praises = []
 
 const server = http.createServer(async (req, res) => {
 

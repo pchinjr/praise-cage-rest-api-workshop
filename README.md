@@ -1,36 +1,75 @@
 # praise-cage-rest-api-workshop
 Norfolk JS 2025 Workshop on REST APIs
 
-## Prerequisites
+## Table of Contents
+
+1. [Prerequisites](#1-prerequisites)
+2. [Workshop Timeline](#2-workshop-timeline)
+3. [Getting Started with HTML and an HTTP Endpoint](#3-getting-started-with-html-and-an-http-endpoint)
+    - [3a. Create a Codespace](#3a-create-a-codespace)
+    - [3b. Set Up a Val.town Account](#3b-set-up-a-valtown-account)
+4. [Create a Static HTML Page with a `<form>` Element to POST](#4-create-a-static-html-page-with-a-form-element-to-post)
+    - [4a. Create index.html](#4a-create-indexhtml)
+    - [4b. Serve Your Static HTML](#4b-serve-your-static-html)
+    - [4c. Create a Val.town HTTP Endpoint to Receive Form-Encoded Data and Respond with JSON](#4c-create-a-valtown-http-endpoint-to-receive-form-encoded-data-and-respond-with-json)
+    - [4d. Checkpoint 1: Form Submission](#4d-checkpoint-1-form-submission)
+    - [4e. View JSON Response in the Browser](#4e-view-json-response-in-the-browser)
+    - [4f. No Client-Side JavaScript Required to Send Data](#4f-no-client-side-javascript-required-to-send-data)
+    - [4g. Update Val Town HTTP Endpoint to Return a Redirect to an HTML Page](#4g-update-val-town-http-endpoint-to-return-a-redirect-to-an-html-page)
+    - [4h. Use HTML Page to Issue a GET Request to the Val Town HTTP Endpoint](#4h-use-html-page-to-issue-a-get-request-to-the-val-town-http-endpoint)
+    - [4i. Update Val Town HTTP Endpoint to Return HTML Instead of JSON](#4i-update-val-town-http-endpoint-to-return-html-instead-of-json)
+    - [4j. Checkpoint 2: Server Rendering](#4j-checkpoint-2-server-rendering)
+5. [Build Our Own Server](#5-build-our-own-server)
+    - [5a. Setting Up Static File Serving](#5a-setting-up-static-file-serving)
+    - [5b. Running the Static Server](#5b-running-the-static-server)
+    - [5c. Transitioning to a Local Development Server](#5c-transitioning-to-a-local-development-server)
+    - [5d. Adding API Functionality](#5d-adding-api-functionality)
+    - [5e. Switching Endpoints](#5e-switching-endpoints)
+    - [5f. Checkpoint 3: Local API Server](#5f-checkpoint-3-local-api-server)
+6. [Add Authentication Hooks with Different Architecture](#6-add-authentication-hooks-with-different-architecture)
+    - [6a. Install Dependencies](#6a-install-dependencies)
+    - [6b. Create Fastify Server with Authentication](#6b-create-fastify-server-with-authentication)
+    - [6c. Checkpoint 4: Authentication](#6c-checkpoint-4-authentication)
+    - [6d. Security Considerations](#6d-security-considerations)
+7. [API Reference](#7-api-reference)
+8. [Troubleshooting Tips](#8-troubleshooting-tips)
+9. [Workshop Recap: What We've Built](#9-workshop-recap-what-weve-built)
+10. [What We Accomplished](#10-what-we-accomplished)
+11. [Extension Challenges](#11-extension-challenges)
+12. [Further Learning Topics](#12-further-learning-topics)
+
+---
+
+## 1. Prerequisites
 - Basic JavaScript knowledge
 - Familiarity with HTML forms
 - Understanding of HTTP requests (GET/POST)
 - Node.js installed on your machine
 
-## Workshop Timeline
+## 2. Workshop Timeline
 - Getting Started (15 min)
 - Creating a Static HTML Form (20 min)
 - Building Our Own Server (30 min)
 - Adding Authentication (30 min)
 - Finish full CRUD features (15 min)
 
-## 1. Getting Started with HTML and an HTTP Endpoint
+## 3. Getting Started with HTML and an HTTP Endpoint
 
-To begin, **create a Codespace** from this repo and **set up a Val.town account** to handle form submissions.
-
-### Create a Codespace
+### 3a. Create a Codespace
 1. Fork this repository.  
 2. In your forked repo, go to **Code → Codespaces** and create a new Codespace.  
 3. This gives you an online dev environment to edit and run the project.
 
-### Set Up a Val.town Account
+### 3b. Set Up a Val.town Account
 1. Go to [Val.town](https://val.town) and sign in with your **GitHub account**.  
 2. Create a new **HTTP val** to handle form submissions.  
 3. Copy your Val.town function's **endpoint URL**—you'll use this in your `index.html` form.
 
 Once set up, you'll use **Val.town as your backend** and **Codespaces as your workspace**. 🚀
 
-## 2. Create a Static HTML Page with a `<form>` Element to POST
+## 4. Create a Static HTML Page with a `<form>` Element to POST
+
+### 4a. Create index.html
 
 Create a `/public/index.html` file and add the following code:
 
@@ -51,9 +90,11 @@ Create a `/public/index.html` file and add the following code:
 </html>
 ```
 
-Serve your static HTML with `npx live-server` in the console. Hit 'Y' to accept downloading, if it asks, first time only. Make note of the proxy URL Codespaces generates for you. It is available as an environment variable `echo $CODESPACE_NAME`  
+### 4b. Serve Your Static HTML
 
-### Create a Val.town HTTP Endpoint to Receive Form-Encoded Data and Respond with JSON
+Serve your static HTML with `npx live-server` in the console. Hit 'Y' to accept downloading, if it asks, first time only. Make note of the proxy URL Codespaces generates for you. It is available as an HTTPS link in your Codespaces terminal.
+
+### 4c. Create a Val.town HTTP Endpoint to Receive Form-Encoded Data and Respond with JSON
 
 Create a new HTTP Val in Val Town and add the following code:
 
@@ -95,21 +136,22 @@ The docs for Val.town blob interface is here: https://docs.val.town/std/blob/
 
 You can fork your own blob admin from here: https://www.val.town/v/stevekrouse/blob_admin
 
-### Checkpoint 1: Form Submission
+### 4d. Checkpoint 1: Form Submission
 - Submit a form entry - you should see a JSON response with your praise
 - The form should work without any client-side JavaScript
 
-### View JSON Response in the Browser
+### 4e. View JSON Response in the Browser
 - After submitting a form entry, the page will display JSON output with all recorded praises.
 - Open the endpoint URL in a browser (`GET` request) to view stored praises in JSON format.
 
-### No Client-Side JavaScript Required to Send Data
+### 4f. No Client-Side JavaScript Required to Send Data
 - The form submission works **without JavaScript**.
 - The browser directly handles sending form data to the Val Town API.
 - The browser has only two methods for <form> elements, GET and POST
 - POST requests contain form-encoded data
 
-### Update Val Town HTTP Endpoint to Return a Redirect to an HTML Page
+### 4g. Update Val Town HTTP Endpoint to Return a Redirect to an HTML Page
+
 Modify the Val Town function to redirect users back to the form page after submitting a praise:
 
 ```js
@@ -148,7 +190,7 @@ export default async function(request: Request) {
 }
 ```
 
-### Use HTML Page to Issue a GET Request to the Val Town HTTP Endpoint
+### 4h. Use HTML Page to Issue a GET Request to the Val Town HTTP Endpoint
 
 Add a new button to `index.html` for issuing a GET request for all stored praises as JSON:
 
@@ -158,7 +200,8 @@ Add a new button to `index.html` for issuing a GET request for all stored praise
 </form>
 ```
 
-### Update Val Town HTTP Endpoint to Return HTML Instead of JSON
+### 4i. Update Val Town HTTP Endpoint to Return HTML Instead of JSON
+
 Modify the Val Town function to return an HTML page instead of JSON:
 
 ```js
@@ -184,15 +227,16 @@ Modify the Val Town function to return an HTML page instead of JSON:
 ```
 Congratulations, you now have a server rendered page!
 
-### Checkpoint 2: Server Rendering
+### 4j. Checkpoint 2: Server Rendering
 - Click "View Praises" button - you should see an HTML page with your praises
 - Submit a new praise - you should be redirected back to your form
 
-## 3. Build Our Own Server
+## 5. Build Our Own Server
 
-Before setting up a new API layer, we will serve static files from the local file system. This allows us to load `/public/index.html` and any other static assets without using `npx live-server`. Instead, we'll make a new server using Node's HTTP module. 
+Before setting up a new API layer, we will serve static files from the local file system. This allows us to load `/public/index.html` and any other static assets without using `npx live-server`. Instead, we'll use Node.js.
 
-### Setting Up Static File Serving
+### 5a. Setting Up Static File Serving
+
 Create a new file called `server.js` and add the following code:
 
 ```js
@@ -225,9 +269,8 @@ server.listen(3000, () => {
 });
 ```
 
-We now have written server code that handles serving static files.
+### 5b. Running the Static Server
 
-### Running the Static Server
 1. Save the file as `server.js`.
 2. Run the server with:
    ```sh
@@ -237,11 +280,11 @@ We now have written server code that handles serving static files.
 
 Once this is working, we can proceed to add API functionality.
 
-### Transitioning to a Local Development Server
+### 5c. Transitioning to a Local Development Server
 
-Now that we have served static files, the next step is to mirror the functionality of the Val Town endpoint. This allows you to seamlessly switch between the Val Town API and your own server while maintaining the same RESTful functionality.
+Now that we have served static files, the next step is to mirror the functionality of the Val Town endpoint. This allows you to seamlessly switch between the Val Town API and your own server while maintaining your workflow.
 
-### Adding API Functionality
+### 5d. Adding API Functionality
 
 After serving static files, let's extend the server to handle API routes for submitting and retrieving praises.
 Add the following code to `server.js`:
@@ -304,10 +347,10 @@ const server = http.createServer(async (req, res) => {
   // ... rest of code from previous step
 
 });
-
 ```
 
-#### Switching Endpoints
+### 5e. Switching Endpoints
+
 - You can now switch between the Val Town endpoint and your local endpoint by updating `index.html` to use the new route on our local node server:
 
 ```html
@@ -322,22 +365,23 @@ const server = http.createServer(async (req, res) => {
   </form>
 ```
 
-### Checkpoint 3: Local API Server
+### 5f. Checkpoint 3: Local API Server
 - Submit a praise using your local server - you should be redirected to the form
 - View praises - you should see an HTML page with your praises
 - Try stopping and restarting the server - note that praises are lost (stored in memory)
 
-## 4. Add Authentication Hooks with Different Architecture
+## 6. Add Authentication Hooks with Different Architecture
 
-We will now add an authentication layer to our API using JWTs. To handle the new complexity, we can move to a framework that implements some request/response lifecycle hooks. This means the framework will give us an interface to do some processing during the request and response negotiations. The framework we'll use is Fastify. Also, we'll move to fully server rendered content for all pages. This lets the server compile the dynamic data and respond with a string of HTML that the browser will render.
+We will now add an authentication layer to our API using JWTs. To handle the new complexity, we can move to a framework that implements some request/response lifecycle hooks. This means the framework does some of the heavy lifting for us.
 
-### Install Dependencies
+### 6a. Install Dependencies
 ```bash
 npm init -y
 npm install fastify @fastify/cookie @fastify/formbody @fastify/jwt
 ```
 
-### Create Fastify Server with Authentication
+### 6b. Create Fastify Server with Authentication
+
 Replace your `server.js` code with the following: 
 
 ```js
@@ -518,17 +562,17 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
 });
 ```
 
-### Checkpoint 4: Authentication
+### 6c. Checkpoint 4: Authentication
 - Test login with credentials: username "nic", password "praisecage!"
 - Add, update, and delete praises
 - Try logging out and back in
 
-### Security Considerations
+### 6d. Security Considerations
 - The JWT has no expiration - consider adding `expiresIn` to the token
 - Passwords are stored in plaintext - use hashing in real applications
 - All users share the same data - add user-specific data separation
 
-## 5. API Reference
+## 7. API Reference
 
 | Endpoint          | Method | Description                | Auth Required |
 |-------------------|--------|----------------------------|---------------|
@@ -540,14 +584,14 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
 | /praises/delete/:id | POST | Delete a praise by ID     | Yes           |
 | /logout           | POST   | Log user out               | Yes           |
 
-## 6. Troubleshooting Tips
+## 8. Troubleshooting Tips
 
 - If you see "Cannot GET /praises" - Check your route spelling and server restart
 - JWT verification fails - Ensure cookie is being set properly
 - Form submission doesn't work - Verify your action URL and method
 - If localhost doesn't work in Codespaces, try using the full GitHub proxy URL
 
-## 7. Workshop Recap: What We've Built
+## 9. Workshop Recap: What We've Built
 
 ```
 ┌─────────────────┐    HTTP Request     ┌─────────────────┐
@@ -559,7 +603,7 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
 └─────────────────┘    HTTP Response    └─────────────────┘
 ```
 
-## 8. What We Accomplished
+## 10. What We Accomplished
 - Serve static HTML
 - HTML `<forms>` element
 - HTTP methods
@@ -576,7 +620,7 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
 - RESTful API Design
   - CRUD functionality (Create, Read, Update, Delete)
 
-## 9. Extension Challenges
+## 11. Extension Challenges
 
 1. **Add User-Specific Data**
    - Modify the server to store praises separately for each user
@@ -590,7 +634,7 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
 4. **Add Client-Side JavaScript**
    - Use `fetch()` to create a more dynamic UI without page reloads
 
-## 10. Further Learning Topics
+## 12. Further Learning Topics
 - Client side JavaScript
   - `fetch()` API
   - URL Parameters

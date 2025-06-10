@@ -190,7 +190,7 @@ Congratulations, you now have a server rendered page!
 
 ## 3. Build Our Own Server
 
-Before setting up a new API layer, we will serve static files from the local file system. This allows us to load `index.html` and any other static assets without using `npx live-server`. Instead, we'll make a new server using Node's HTTP module. 
+Before setting up a new API layer, we will serve static files from the local file system. This allows us to load `/public/index.html` and any other static assets without using `npx live-server`. Instead, we'll make a new server using Node's HTTP module. 
 
 ### Setting Up Static File Serving
 Create a new file called `server.js` and add the following code:

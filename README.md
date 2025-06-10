@@ -231,15 +231,10 @@ Congratulations, you now have a server rendered page!
 - Click "View Praises" button - you should see an HTML page with your praises
 - Submit a new praise - you should be redirected back to your form
 
-Certainly! Here is a complete, copy-paste-ready Section 5 for your README. It explicitly shows the progression of your `server.js` file, directs users on how to switch between the Val Town and local endpoints, and removes ambiguity at each step.
-
----
 
 ## 5. Build Our Own Server
 
 This section will guide you step-by-step in building your Node.js server, starting simple and evolving into a RESTful endpoint. Each code snippet is a full working version of `server.js` for that stage—copy and replace your file each time.
-
----
 
 ### 5a. Initial Version: Serve Static HTML Only
 
@@ -751,6 +746,7 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
    - Use `fetch()` to create a more dynamic UI without page reloads
 
 ## 12. Further Learning Topics
+- Information Architecture for better documentation
 - Client side JavaScript
   - `fetch()` API
   - URL Parameters
@@ -771,7 +767,11 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
 - Alternatives to REST
   - GraphQL
   - tRPC
+  - MCP (Model Context Protocol)
 - Deployment and Operation Models
   - Monolith
   - Microservice
   - CI/CD
+    - build, test, deploy application and service pipelines
+    - automated operations, logging, monitoring, tracing
+  - Infrastructure as Code
